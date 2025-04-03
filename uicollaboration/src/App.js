@@ -2,7 +2,7 @@ import React from 'react';
 import Chat from './component/chat';
 
 const App = () => {
-    const projectId = ''; // Remplacez par l'ID de projet
+    const projectId = "67ee5412aa7c5dc3c8a1a107"; // Remplacez par l'ID de projet
 
     return (
         <div style={{ padding: '20px' }}>

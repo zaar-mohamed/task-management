@@ -16,52 +16,54 @@ router.get("/all",async(req,res)=>{
 
 // ajouter une tache
 router.post("/add",async(req,res)=>{
-    try{
+    try {
         const {titre,description,status,priorite,deadline,commentaire,projet_id,assignedUser,createdby}=req.body;
-        // verification si le projet existe;
-        const projetresponse=await axios.get(`http://localhost:3001/projets/${projet_id}`,{
-            headers:{
-                Authorization:req.headers.Authorization
-            }
-            
-        });
-        if(!projetresponse.data){
-            return res.status(404).json({message:"Projet non trouvé"})
+    const projetresponse = await axios.get(`http://localhost:3001/projets/projects/${projet_id}`, {
+        headers: {
+            Authorization: req.headers.Authorization
         }
-        // verification si les utilisateurs existent;
-        const assignedUserresponse=await axios.get(`http://localhost:5000/api/auth/users/${assignedUser}`,{
-            headers:{
-                Authorization:req.headers.Authorization
-            }
-        });
-        if(!assignedUserresponse.data){
-            return res.status(404).json({message:"Utilisateur non trouvé"})
-        }
-        // verification si le createur est  un administateur
-        const createdbyresponse=await axios.get(`http://localhost:5000/api/auth/users/${createdby}`,{
-            headers:{
-                Authorization:req.headers.Authorization
-            }
-        });
-        if(createdbyresponse.data.role!=="admin"){
-            return res.status(403).json({message:"Vous devez etre admin pour ajouter une tache"})
-        }
-        // creation de tache
-        const newtache=new tasks({
-            titre,description,status,priorite,deadline,commentaire,projet_id,assignedUser,createdby
-        });
-        await newtache.save();
-        res.status(201).json(newtache);        
+    });
+    console.log("Projet response:", projetresponse.data);
+    if (!projetresponse.data) {
+        return res.status(404).json({ message: "Projet non trouvé" });
     }
-    catch(err){
-        res.status(500).json({message:`erreur lors de l'ajout de la tache: ${err.message}`})
+
+    const assignedUserresponse = await axios.get(`http://localhost:5000/api/auth/users/${assignedUser}`, {
+        headers: {
+            Authorization: req.headers.Authorization
+        }
+    });
+    console.log("Assigned User response:", assignedUserresponse.data);
+    if (!assignedUserresponse.data) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
     }
+
+    const createdbyresponse = await axios.get(`http://localhost:5000/api/auth/users/${createdby}`, {
+        headers: {
+            Authorization: req.headers.Authorization
+        }
+    });
+    console.log("Created by response:", createdbyresponse.data);
+    if (createdbyresponse.data.role !== "admin") {
+        return res.status(403).json({ message: "Vous devez être admin pour ajouter une tâche" });
+    }
+
+    // Création de tâche
+    const newtache = new tasks({
+        titre, description, status, priorite, deadline, commentaire, projet_id, assignedUser, createdby
+    });
+    await newtache.save();
+    res.status(201).json(newtache);
+} catch (err) {
+    console.error(err); // Ajout d'un log d'erreur
+    res.status(500).json({ message: `Erreur lors de l'ajout de la tâche: ${err.message}` });
+}
 });
 
 // les taches d'un projet
 router.get("/projet/:id",async(req,res)=>{
     try{
-        const projetresponse=await axios.get(`http://localhost:3001/projets/${axios.req.params.id}`,{
+        const projetresponse=await axios.get(`http://localhost:3001/projets/projects/${axios.req.params.id}`,{
             headers:{
                 Authorization:req.headers.authorization
             }
@@ -126,7 +128,7 @@ router.put("/update/:id",async(req,res)=>{
 router.delete("/delete/:id",async(req,res)=>{
     try{
         const tacheID=req.params.id;
-        const deletedtask=await tasks.findByIdAndDelete(tacheId);
+        const deletedtask=await tasks.findByIdAndDelete(tacheID);
         if(!deletedtask){
             return res.status(404).json({message:"tache not found"})
         }
@@ -199,7 +201,7 @@ router.delete("/deletecomment/:id/:commentID",async(req,res)=>{
 router.delete("/deleteAllTasks/:projectID",async(req,res)=>{
     try{
        const projectID=req.params.projectID;
-       const projectExists=await axios.get(`http://localhost:3001/projets/${projectID}`,{
+       const projectExists=await axios.get(`http://localhost:3001/projets/projects/${projectID}`,{
             headers:{
                 authorization:req.headers.authorization
             }
